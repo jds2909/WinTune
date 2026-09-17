@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="WinTune.vcxproj" Id="927faa09-e7ac-43f2-ad45-47795f948cdb" />
+</Solution>
