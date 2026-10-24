@@ -10,7 +10,8 @@ Tweak::Tweak
 	const std::string& category,
 	const std::string& riskLevel,
 	const std::string& currentValue,
-	const std::string& recommendedValue
+	const std::string& recommendedValue,
+	const std::string& type
 )
 	: m_id(id),
 	m_name(name),
@@ -18,7 +19,8 @@ Tweak::Tweak
 	m_category(category),
 	m_riskLevel(riskLevel),
 	m_currentValue(currentValue),
-	m_recommendedValue(recommendedValue)
+	m_recommendedValue(recommendedValue),
+	m_type(type)
 {
 
 }
@@ -32,4 +34,5 @@ void Tweak::printDetails() const
 	std::cout << "Risk Level: " << m_riskLevel << ".\n";
 	std::cout << "Category: " << m_currentValue << ".\n";
 	std::cout << "Risk Level: " << m_recommendedValue << ".\n";
+	std::cout << "Type of tweak: " << m_type << ".\n";
 }
