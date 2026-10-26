@@ -142,10 +142,12 @@
     <ClCompile Include="RegistryProvider.cpp" />
     <ClCompile Include="Tweak.cpp" />
     <ClCompile Include="WinTune.cpp" />
+    <ClCompile Include="WinTuneApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RegistryProvider.h" />
     <ClInclude Include="Tweak.h" />
+    <ClInclude Include="WinTuneApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -24,12 +24,18 @@
     <ClCompile Include="RegistryProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WinTuneApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Tweak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RegistryProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinTuneApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
