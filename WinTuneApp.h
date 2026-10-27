@@ -12,6 +12,7 @@ public:
 
 private:
 	std::vector<Tweak> regTweaks;
+	int choice;
 
 	bool showMainMenu();
 	void showRegistryMenu();

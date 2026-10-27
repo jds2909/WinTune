@@ -35,7 +35,40 @@ void WinTuneApp::run()
         "Advanced",
         std::to_string(currentWin32Value),
         "42",
-        "regedit"
+        "regedit",
+        {
+            {
+                38,
+                "Short, variable - 3x foreground quantum",
+                "Desktop-style baseline (0x26). Foreground threads receive "
+                "three times the background quantum length. Favours the active "
+                "application under CPU contention; does not guarantee higher FPS."
+            },
+            {
+                37,
+                "Short, variable - 2x foreground quantum",
+                "Experimental (0x25). Foreground threads receive twice the "
+                "background quantum length. Reduces foreground preference "
+                "compared with 38; may help competing background work at the "
+                "expense of the active application."
+            },
+            {
+                36,
+                "Short, variable - no foreground extension",
+                "Experimental (0x24). Foreground and background threads use "
+                "the same short quantum length. Removes foreground quantum "
+                "preference; may disadvantage the active application under "
+                "contention. Other scheduling priorities still apply."
+            },
+            {
+                40,
+                "Short, fixed - no foreground extension",
+                "Experimental (0x28). Uses the fixed short-quantum table, "
+                "without a foreground quantum extension. Its quantum lengths "
+                "differ from 36 despite both being labelled short. May change "
+                "throughput and responsiveness; benchmark before retaining."
+            }
+        }
     );
 
     // push to vector containing all tweak objs
@@ -51,12 +84,10 @@ bool WinTuneApp::showMainMenu()
 
     while (menuRunning)
     {
-        system("cls");
         printAscii();
         std::cout << "1. Registry tweaks\n";
         std::cout << "2. Exit\n"; \
 
-        int choice;
         std::cin >> choice;
 
         if (choice == 1)
@@ -81,14 +112,10 @@ bool WinTuneApp::showMainMenu()
 
 void WinTuneApp::showRegistryMenu()
 {
-    int choice;
-
     bool registryMenuRunning = true;
 
     while (registryMenuRunning)
     {
-        system("cls");
-
         printAscii();
 
         for (int i = 0; i < regTweaks.size(); ++i)
@@ -107,6 +134,7 @@ void WinTuneApp::showRegistryMenu()
 
         else if (choice <= regTweaks.size() && choice > 0)
         {
+            printAscii();
             showTweakDetails(choice);
             // if tweaks[choice - 1] (list num - 1 = index) --- > update win32priovalue
         }
@@ -124,20 +152,38 @@ void WinTuneApp::showTweakDetails(const int& choice)
 
     if (regTweaks[choice - 1].getId() == "win32_priority_separation")
     {
+        // vector of option structs
+        auto optionStructs = regTweaks[choice - 1].getOptions();
+
         std::cout << regTweaks[choice - 1].getName() << "\n";
+        std::cout << regTweaks[choice - 1].getDesc() << "\n";
         std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
-        std::cout << "Recommended value: " << regTweaks[choice - 1].getRecVal() << "\n";
+        std::cout << "\n";
+        for (int i = 0; i < (regTweaks[choice - 1].getOptions()).size(); ++i)
+        {
+            if (optionStructs[i].value == stoi(regTweaks[choice - 1].getCurrVal()))
+            {
+                std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << " (X)" << "\n";
+            }
+
+            else
+            {
+                std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << "\n";
+            }
+        }
+
+        std::cout << (regTweaks[choice - 1].getOptions().size()) + 1 << ". Exit" << "\n";
 
         DWORD newValue = 0x2A;
 
-        bool success2 = registry.writeDword(
+        /*bool success2 = registry.writeDword(
             HKEY_LOCAL_MACHINE,
             L"SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
             L"Win32PrioritySeparation",
             newValue
-        );
+        );*/
 
-        if (success2)
+        /*if (success2)
         {
             std::cout << "Win32PrioritySeparation has been set to 2a" << '\n';
 
@@ -146,14 +192,45 @@ void WinTuneApp::showTweakDetails(const int& choice)
         else
         {
             std::cout << "Failed to change Win32PrioritySeparation value.\n";
-        }
+        }*/
 
         std::cin >> newChoice;
+
+        bool valueMenuRunning = true;
+
+
+        while (valueMenuRunning)
+        {
+            // if newChoice = options total + 1 (exit)
+            if (newChoice == (regTweaks[choice - 1].getOptions().size()) + 1)
+            {
+                return;
+            }
+
+            else if (newChoice >= 1 && newChoice <= regTweaks[choice - 1].getOptions().size())
+            {
+                // newChoice - 1 = index of struct for selected option.
+                printAscii();
+                std::cout << regTweaks[choice - 1].getName() << "\n";
+                std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
+                std::cout << "Selected value: " << optionStructs[newChoice - 1].value << "\n";
+                std::cout << optionStructs[newChoice - 1].description << "\n";
+                std::cin >> newChoice;
+            }
+
+            else
+            {
+                invalidInput();
+                printAscii();
+                showTweakDetails(choice);
+            }
+        }
     }
 }
 
 void WinTuneApp::printAscii()
 {
+    system("cls");
     std::cout << R"( __      __.__     ___________                           ____ 
 /  \    /  \__| ___\__    ___/_ __  ____   ____   ___  _/_   |
 \   \/\/   /  |/    \|    | |  |  \/    \_/ __ \  \  \/ /|   |

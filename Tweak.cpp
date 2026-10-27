@@ -11,7 +11,8 @@ Tweak::Tweak
 	const std::string& riskLevel,
 	const std::string& currentValue,
 	const std::string& recommendedValue,
-	const std::string& type
+	const std::string& type,
+	const std::vector<selectionOption>& selectionValues
 )
 	: m_id(id),
 	m_name(name),
@@ -20,7 +21,8 @@ Tweak::Tweak
 	m_riskLevel(riskLevel),
 	m_currentValue(currentValue),
 	m_recommendedValue(recommendedValue),
-	m_type(type)
+	m_type(type),
+	m_selectionValues(selectionValues)
 {
 
 }
