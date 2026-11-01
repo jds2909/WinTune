@@ -8,16 +8,19 @@ class WinTuneApp
 {
 public:
 	void run();
-	void invalidInput();
 
 private:
 	std::vector<Tweak> regTweaks;
 	int choice;
 
+	void invalidInput();
+	void alreadySelected();
 	bool showMainMenu();
 	void showRegistryMenu();
-	void showTweakDetails(const int& choice);
+	void showTweakDetails();
+	void selectedValueMenu();
 	void printAscii();
+	bool confirmSelection(const std::string& input);
 
 	RegistryProvider registry;
 };

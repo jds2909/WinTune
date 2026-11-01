@@ -9,7 +9,7 @@ public:
 
 	struct selectionOption
 	{
-		unsigned int value;
+		int value;
 		std::string label;
 		std::string description;
 	};

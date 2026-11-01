@@ -5,12 +5,39 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <limits>
+
+bool WinTuneApp::confirmSelection(const std::string& input)
+{
+    if (input == "Y" || input == "y")
+    {
+        return true;
+    }
+
+    else if (input == "N" || input == "n")
+    {
+        return false;
+    }
+
+    else
+    {
+        invalidInput();
+        
+    }
+}
 
 void WinTuneApp::invalidInput()
 {
     system("cls");
     std::cout << "Invalid input, try again.\n";
     std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+void WinTuneApp::alreadySelected()
+{
+    system("cls");
+    std::cout << "This value is already selected (see current value).\n";
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 void WinTuneApp::run()
@@ -103,7 +130,14 @@ bool WinTuneApp::showMainMenu()
 
         else
         {
-            invalidInput();
+            if (!(std::cin >> choice))
+            {
+                std::cin.clear();
+                std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+
+                invalidInput();
+                continue;
+            }
         }
     }
 
@@ -135,8 +169,7 @@ void WinTuneApp::showRegistryMenu()
         else if (choice <= regTweaks.size() && choice > 0)
         {
             printAscii();
-            showTweakDetails(choice);
-            // if tweaks[choice - 1] (list num - 1 = index) --- > update win32priovalue
+            showTweakDetails();
         }
 
         else
@@ -146,7 +179,7 @@ void WinTuneApp::showRegistryMenu()
     }
 }
 
-void WinTuneApp::showTweakDetails(const int& choice)
+void WinTuneApp::showTweakDetails()
 {
     int newChoice;
 
@@ -155,6 +188,7 @@ void WinTuneApp::showTweakDetails(const int& choice)
         // vector of option structs
         auto optionStructs = regTweaks[choice - 1].getOptions();
 
+        // output currentvalue name ,desc & val 
         std::cout << regTweaks[choice - 1].getName() << "\n";
         std::cout << regTweaks[choice - 1].getDesc() << "\n";
         std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
@@ -172,10 +206,11 @@ void WinTuneApp::showTweakDetails(const int& choice)
             }
         }
 
-        std::cout << (regTweaks[choice - 1].getOptions().size()) + 1 << ". Exit" << "\n";
+        std::cout << (regTweaks[choice - 1].getOptions().size()) + 1 << ". Exit" << "\n";   
 
         DWORD newValue = 0x2A;
 
+        selectedValueMenu();
         /*bool success2 = registry.writeDword(
             HKEY_LOCAL_MACHINE,
             L"SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
@@ -194,36 +229,82 @@ void WinTuneApp::showTweakDetails(const int& choice)
             std::cout << "Failed to change Win32PrioritySeparation value.\n";
         }*/
 
-        std::cin >> newChoice;
+    }
+}
 
-        bool valueMenuRunning = true;
+void WinTuneApp::selectedValueMenu()
+{
+    int valueChoice;
+
+    auto optionStructs = regTweaks[choice - 1].getOptions();
+
+    std::cin >> valueChoice;
+
+    bool valueMenuRunning = true;
 
 
-        while (valueMenuRunning)
+    while (valueMenuRunning)
+    {
+        // if newChoice = options total + 1 (exit)
+        if (valueChoice == (regTweaks[choice - 1].getOptions().size()) + 1)
         {
-            // if newChoice = options total + 1 (exit)
-            if (newChoice == (regTweaks[choice - 1].getOptions().size()) + 1)
-            {
-                return;
-            }
+            return;
+        }
 
-            else if (newChoice >= 1 && newChoice <= regTweaks[choice - 1].getOptions().size())
-            {
-                // newChoice - 1 = index of struct for selected option.
-                printAscii();
-                std::cout << regTweaks[choice - 1].getName() << "\n";
-                std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
-                std::cout << "Selected value: " << optionStructs[newChoice - 1].value << "\n";
-                std::cout << optionStructs[newChoice - 1].description << "\n";
-                std::cin >> newChoice;
-            }
+        // if selection is valid option & not current val.
+        else if (valueChoice >= 1 && valueChoice <= regTweaks[choice - 1].getOptions().size() && optionStructs[valueChoice - 1].value != stoi(regTweaks[choice - 1].getCurrVal()))
+        {
+            // newChoice - 1 = index of struct for selected option.
+            printAscii();
 
-            else
+            std::cout << regTweaks[choice - 1].getName() << "\n";
+            std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
+            std::cout << "Selected value: " << optionStructs[valueChoice - 1].value << "\n\n";
+            std::cout << optionStructs[valueChoice - 1].description << "\n\n";
+
+            std::cout << "Please confirm you have read the description and want to update to the selected value. (Y/N)\n";
+
+            std::string confirmChoice;
+            std::cin >> confirmChoice;
+            confirmSelection(confirmChoice);
+
+            if (confirmSelection(confirmChoice))
             {
-                invalidInput();
-                printAscii();
-                showTweakDetails(choice);
+                // update reg value
+                DWORD newValue = optionStructs[valueChoice - 1].value;
+
+                bool success2 = registry.writeDword(
+                    HKEY_LOCAL_MACHINE,
+                    L"SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+                    L"Win32PrioritySeparation",
+                    newValue
+                );
+
+                if (success2)
+                {
+                    std::cout << "\nWin32PrioritySeparation has been set to 2a" << '\n';
+
+                }
+
+                else
+                {
+                    std::cout << "\nFailed to change Win32PrioritySeparation value.\n";
+                }
             }
+        }
+
+        else if (optionStructs[valueChoice - 1].value == stoi(regTweaks[choice - 1].getCurrVal()))
+        {
+            alreadySelected();
+            printAscii();
+            showTweakDetails();
+        }
+
+        else
+        {
+            invalidInput();
+            printAscii();
+            showTweakDetails();
         }
     }
 }
