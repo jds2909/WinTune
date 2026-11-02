@@ -115,33 +115,34 @@ bool WinTuneApp::showMainMenu()
         std::cout << "1. Registry tweaks\n";
         std::cout << "2. Exit\n"; \
 
-        std::cin >> choice;
+        // if failed cin (non-int)
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+            invalidInput();
+        }
 
-        if (choice == 1)
+        // if selected 1
+        else if (choice == 1)
         {
             showRegistryMenu();
         }
 
+        // if selected 2
         else if (choice == 2)
         {
             std::cout << "tank yu com again\n";
             return false;
         }
 
+        // if out of range
         else
         {
-            if (!(std::cin >> choice))
-            {
-                std::cin.clear();
-                std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-
-                invalidInput();
-                continue;
-            }
+            std::cin.clear();
+            invalidInput();
         }
     }
-
-    return 0;
 }
 
 void WinTuneApp::showRegistryMenu()
@@ -159,9 +160,15 @@ void WinTuneApp::showRegistryMenu()
 
         std::cout << regTweaks.size() + 1 << ". " << "Return\n";
 
-        std::cin >> choice;
+        // if failed cin (non-int)
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+            invalidInput();
+        }
 
-        if (choice == regTweaks.size() + 1)
+        else if (choice == regTweaks.size() + 1)
         {
             return;
         }
@@ -174,6 +181,7 @@ void WinTuneApp::showRegistryMenu()
 
         else
         {
+            std::cin.clear();
             invalidInput();
         }
     }
@@ -181,8 +189,6 @@ void WinTuneApp::showRegistryMenu()
 
 void WinTuneApp::showTweakDetails()
 {
-    int newChoice;
-
     if (regTweaks[choice - 1].getId() == "win32_priority_separation")
     {
         // vector of option structs
@@ -238,15 +244,21 @@ void WinTuneApp::selectedValueMenu()
 
     auto optionStructs = regTweaks[choice - 1].getOptions();
 
-    std::cin >> valueChoice;
-
     bool valueMenuRunning = true;
 
 
     while (valueMenuRunning)
     {
+        // if failed cin (non-int)
+        if (!(std::cin >> valueChoice))
+        {
+            std::cin.clear();
+            std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+            invalidInput();
+        }
+
         // if newChoice = options total + 1 (exit)
-        if (valueChoice == (regTweaks[choice - 1].getOptions().size()) + 1)
+        else if (valueChoice == (regTweaks[choice - 1].getOptions().size()) + 1)
         {
             return;
         }
@@ -302,6 +314,7 @@ void WinTuneApp::selectedValueMenu()
 
         else
         {
+            std::cin.clear();
             invalidInput();
             printAscii();
             showTweakDetails();
