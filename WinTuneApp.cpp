@@ -22,7 +22,6 @@ bool WinTuneApp::confirmSelection(const std::string& input)
     else
     {
         invalidInput();
-        
     }
 }
 
@@ -189,54 +188,62 @@ void WinTuneApp::showRegistryMenu()
 
 void WinTuneApp::showTweakDetails()
 {
-    if (regTweaks[choice - 1].getId() == "win32_priority_separation")
-    {
-        // vector of option structs
-        auto optionStructs = regTweaks[choice - 1].getOptions();
+    bool showTweakDetailsRunning = true;
 
-        // output currentvalue name ,desc & val 
-        std::cout << regTweaks[choice - 1].getName() << "\n";
-        std::cout << regTweaks[choice - 1].getDesc() << "\n";
-        std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
-        std::cout << "\n";
-        for (int i = 0; i < (regTweaks[choice - 1].getOptions()).size(); ++i)
+    while (showTweakDetailsRunning)
+    {
+        printAscii();
+        if (regTweaks[choice - 1].getId() == "win32_priority_separation")
         {
-            if (optionStructs[i].value == stoi(regTweaks[choice - 1].getCurrVal()))
+            // vector of option structs
+            auto optionStructs = regTweaks[choice - 1].getOptions();
+
+            // output currentvalue name ,desc & val 
+            std::cout << regTweaks[choice - 1].getName() << "\n";
+            std::cout << regTweaks[choice - 1].getDesc() << "\n";
+            std::cout << "Current value: " << regTweaks[choice - 1].getCurrVal() << "\n";
+            std::cout << "\n";
+            for (int i = 0; i < (regTweaks[choice - 1].getOptions()).size(); ++i)
             {
-                std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << " (X)" << "\n";
+                if (optionStructs[i].value == stoi(regTweaks[choice - 1].getCurrVal()))
+                {
+                    std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << " (X)" << "\n";
+                }
+
+                else
+                {
+                    std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << "\n";
+                }
+            }
+
+            std::cout << (regTweaks[choice - 1].getOptions().size()) + 1 << ". Exit" << "\n";
+
+            DWORD newValue = 0x2A;
+
+            selectedValueMenu();
+            showTweakDetailsRunning = false;
+            /*bool success2 = registry.writeDword(
+                HKEY_LOCAL_MACHINE,
+                L"SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+                L"Win32PrioritySeparation",
+                newValue
+            );*/
+
+            /*if (success2)
+            {
+                std::cout << "Win32PrioritySeparation has been set to 2a" << '\n';
+
             }
 
             else
             {
-                std::cout << i + 1 << ". " << optionStructs[i].value << " " << optionStructs[i].label << "\n";
-            }
-        }
-
-        std::cout << (regTweaks[choice - 1].getOptions().size()) + 1 << ". Exit" << "\n";   
-
-        DWORD newValue = 0x2A;
-
-        selectedValueMenu();
-        /*bool success2 = registry.writeDword(
-            HKEY_LOCAL_MACHINE,
-            L"SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
-            L"Win32PrioritySeparation",
-            newValue
-        );*/
-
-        /*if (success2)
-        {
-            std::cout << "Win32PrioritySeparation has been set to 2a" << '\n';
+                std::cout << "Failed to change Win32PrioritySeparation value.\n";
+            }*/
 
         }
-
-        else
-        {
-            std::cout << "Failed to change Win32PrioritySeparation value.\n";
-        }*/
-
     }
 }
+
 
 void WinTuneApp::selectedValueMenu()
 {
@@ -245,7 +252,6 @@ void WinTuneApp::selectedValueMenu()
     auto optionStructs = regTweaks[choice - 1].getOptions();
 
     bool valueMenuRunning = true;
-
 
     while (valueMenuRunning)
     {
@@ -294,14 +300,22 @@ void WinTuneApp::selectedValueMenu()
 
                 if (success2)
                 {
-                    std::cout << "\nWin32PrioritySeparation has been set to 2a" << '\n';
-
+                    std::cout << "\nWin32PrioritySeparation has been set to " << newValue << '\n';
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
+                    valueMenuRunning = false;
                 }
 
                 else
                 {
                     std::cout << "\nFailed to change Win32PrioritySeparation value.\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
+                    valueMenuRunning = false;
                 }
+            }
+
+            else
+            {
+                return;
             }
         }
 
